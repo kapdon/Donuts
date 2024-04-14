@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Aki.Reflection.Patching;
+using StayInTarkov;
 using BepInEx;
 using BepInEx.Configuration;
 using EFT;
@@ -17,7 +17,7 @@ namespace Donuts
 {
 
     [BepInPlugin("com.dvize.Donuts", "dvize.Donuts", "1.4.3")]
-    [BepInDependency("com.spt-aki.core", "3.8.0")]
+    //[BepInDependency("com.spt-aki.core", "3.8.0")]
     [BepInDependency("xyz.drakia.waypoints")]
     public class DonutsPlugin : BaseUnityPlugin
     {
@@ -612,7 +612,7 @@ namespace Donuts
             new NewGameDonutsPatch().Enable();
             new BotGroupAddEnemyPatch().Enable();
             new BotMemoryAddEnemyPatch().Enable();
-            new MatchEndPlayerDisposePatch().Enable();
+            //new MatchEndPlayerDisposePatch().Enable();
             new PatchStandbyTeleport().Enable();
             new BotProfilePreparationHook().Enable();
             new AddEnemyPatch().Enable();

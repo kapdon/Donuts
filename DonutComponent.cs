@@ -1,14 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Aki.PrePatch;
-using Aki.Reflection.Utils;
+using StayInTarkov;
 using BepInEx.Logging;
 using Comfort.Common;
 using EFT;
 using HarmonyLib;
 using Systems.Effects;
 using UnityEngine;
+
+using PatchConstants = StayInTarkov.StayInTarkovHelperConstants;
 
 #pragma warning disable IDE0007, IDE0044
 namespace Donuts
@@ -24,8 +25,8 @@ namespace Donuts
 
         internal List<WildSpawnType> validDespawnListPMC = new List<WildSpawnType>()
         {
-            (WildSpawnType)AkiBotsPrePatcher.sptUsecValue,
-            (WildSpawnType)AkiBotsPrePatcher.sptBearValue
+            WildSpawnType.sptUsec,
+            WildSpawnType.sptBear
         };
 
         internal List<WildSpawnType> validDespawnListScav = new List<WildSpawnType>()
@@ -429,4 +430,3 @@ namespace Donuts
     }
 
 }
-

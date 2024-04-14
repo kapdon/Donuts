@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Aki.PrePatch;
+using StayInTarkov;
 using EFT;
 using EFT.Communications;
 using Newtonsoft.Json;
@@ -38,11 +38,11 @@ namespace Donuts
             currentInitialPMCs = 0;
             currentInitialSCAVs = 0;
 
-        Gizmos.drawnCoordinates = new HashSet<Vector3>();
+            Gizmos.drawnCoordinates = new HashSet<Vector3>();
             gizmoSpheres = new List<GameObject>();
 
-            sptUsec = (WildSpawnType)AkiBotsPrePatcher.sptUsecValue;
-            sptBear = (WildSpawnType)AkiBotsPrePatcher.sptBearValue;
+            sptUsec = WildSpawnType.sptUsec;
+            sptBear = WildSpawnType.sptBear;
         }
         internal static void SetupBotLimit(string folderName)
         {
@@ -243,7 +243,7 @@ namespace Donuts
                 var scenarioSelection = DonutsPlugin.scenarioSelection.Value;
 
                 // check if this is a SCAV raid; this only works during raid load
-                if (Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
+                if (StayInTarkov.AkiSupport.Singleplayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
                 {
 #if DEBUG
                     DonutComponent.Logger.LogDebug($"This is a SCAV raid, using SCAV raid preset selector");

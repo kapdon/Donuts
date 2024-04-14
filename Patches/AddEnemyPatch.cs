@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Aki.Reflection.Patching;
+using StayInTarkov;
 using EFT;
 
 // Stolen from DanW's Questing Bots, thanks Dan!
@@ -26,7 +26,7 @@ namespace Donuts
 
             // This only matters in Scav raids
             // TO DO: This might also matter in PMC raids if a mod adds groups that are friendly to the player
-            /*if (!Aki.SinglePlayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
+            /*if (!StayInTarkov.AkiSupport.Singleplayer.Utils.InRaid.RaidChangesUtil.IsScavRaid)
             {
                 return true;
             }*/

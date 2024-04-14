@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Reflection;
-using Aki.Reflection.Patching;
+using StayInTarkov;
 using EFT;
 using HarmonyLib;
 

@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Aki.PrePatch;
+using StayInTarkov;
 using Comfort.Common;
 using EFT;
 using HarmonyLib;
 using UnityEngine;
 using static Donuts.DonutComponent;
-using BotCacheClass = GClass591;
+using BotCacheClass = Data1;
 using CorePointFinder = AICorePointHolder;
-using IProfileData = GClass592;
+using IProfileData = Data8;
 
-#pragma warning disable IDE0007, IDE0044
+#pragma warning disable IDE0007, IDE0044, IDE1006
 
 namespace Donuts
 {
@@ -36,7 +36,7 @@ namespace Donuts
                 DonutComponent.Logger.LogDebug($"Hard stop PMCs is enabled, checking raid time");
 #endif
                 var pluginRaidTimeLeft = DonutsPlugin.hardStopTimePMC.Value;
-                var raidTimeLeft = Aki.SinglePlayer.Utils.InRaid.RaidTimeUtil.GetRemainingRaidSeconds();
+                var raidTimeLeft = StayInTarkov.AkiSupport.Singleplayer.Utils.InRaid.RaidTimeUtil.GetRemainingRaidSeconds();
                 if (raidTimeLeft < DonutsPlugin.hardStopTimePMC.Value)
                 {
 #if DEBUG
@@ -52,7 +52,7 @@ namespace Donuts
                 DonutComponent.Logger.LogDebug($"Hard stop SCAVs is enabled, checking raid time");
 #endif
                 var pluginRaidTimeLeft = DonutsPlugin.hardStopTimeSCAV;
-                var raidTimeLeft = Aki.SinglePlayer.Utils.InRaid.RaidTimeUtil.GetRemainingRaidSeconds();
+                var raidTimeLeft = StayInTarkov.AkiSupport.Singleplayer.Utils.InRaid.RaidTimeUtil.GetRemainingRaidSeconds();
                 if (raidTimeLeft < DonutsPlugin.hardStopTimeSCAV.Value)
                 {
 #if DEBUG
@@ -146,7 +146,7 @@ namespace Donuts
 
                 bool IsPMC(WildSpawnType role)
                 {
-                    return role == (WildSpawnType)AkiBotsPrePatcher.sptUsecValue || role == (WildSpawnType)AkiBotsPrePatcher.sptBearValue;
+                    return role == WildSpawnType.sptUsec|| role == WildSpawnType.sptBear;
                 }
 
                 bool IsSCAV(WildSpawnType role)
@@ -245,15 +245,15 @@ namespace Donuts
                     wildSpawnType = BotSpawn.GetWildSpawnType(hotspotTimer.Hotspot.WildSpawnType);
                 }
 
-                if (wildSpawnType == (WildSpawnType)AkiBotsPrePatcher.sptUsecValue || wildSpawnType == (WildSpawnType)AkiBotsPrePatcher.sptBearValue)
+                if (wildSpawnType == WildSpawnType.sptUsec || wildSpawnType == WildSpawnType.sptBear)
                 {
                     if (DonutsPlugin.pmcFaction.Value == "USEC")
                     {
-                        wildSpawnType = (WildSpawnType)AkiBotsPrePatcher.sptUsecValue;
+                        wildSpawnType = WildSpawnType.sptUsec;
                     }
                     else if (DonutsPlugin.pmcFaction.Value == "BEAR")
                     {
-                        wildSpawnType = (WildSpawnType)AkiBotsPrePatcher.sptBearValue;
+                        wildSpawnType = WildSpawnType.sptBear;
                     }
                 }
 
@@ -349,7 +349,7 @@ namespace Donuts
 
                 bool IsPMC(WildSpawnType role)
                 {
-                    return role == (WildSpawnType)AkiBotsPrePatcher.sptUsecValue || role == (WildSpawnType)AkiBotsPrePatcher.sptBearValue;
+                    return role == WildSpawnType.sptUsec || role == WildSpawnType.sptBear;
                 }
 
                 bool IsSCAV(WildSpawnType role)
@@ -448,15 +448,15 @@ namespace Donuts
                     wildSpawnType = BotSpawn.GetWildSpawnType(hotspotTimer.Hotspot.WildSpawnType);
                 }
 
-                if (wildSpawnType == (WildSpawnType)AkiBotsPrePatcher.sptUsecValue || wildSpawnType == (WildSpawnType)AkiBotsPrePatcher.sptBearValue)
+                if (wildSpawnType == WildSpawnType.sptUsec || wildSpawnType == WildSpawnType.sptBear)
                 {
                     if (DonutsPlugin.pmcFaction.Value == "USEC")
                     {
-                        wildSpawnType = (WildSpawnType)AkiBotsPrePatcher.sptUsecValue;
+                        wildSpawnType = WildSpawnType.sptUsec;
                     }
                     else if (DonutsPlugin.pmcFaction.Value == "BEAR")
                     {
-                        wildSpawnType = (WildSpawnType)AkiBotsPrePatcher.sptBearValue;
+                        wildSpawnType = WildSpawnType.sptBear;
                     }
                 }
 
@@ -730,13 +730,13 @@ namespace Donuts
                 case "sectantwarrior":
                     return WildSpawnType.sectantWarrior;
                 case "usec":
-                    return (WildSpawnType)AkiBotsPrePatcher.sptUsecValue;
+                    return WildSpawnType.sptUsec;
                 case "bear":
-                    return (WildSpawnType)AkiBotsPrePatcher.sptBearValue;
+                    return WildSpawnType.sptBear;
                 case "sptusec":
-                    return (WildSpawnType)AkiBotsPrePatcher.sptUsecValue;
+                    return WildSpawnType.sptUsec;
                 case "sptbear":
-                    return (WildSpawnType)AkiBotsPrePatcher.sptBearValue;
+                    return WildSpawnType.sptBear;
                 case "followerbigpipe":
                     return WildSpawnType.followerBigPipe;
                 case "followerbirdeye":
@@ -745,7 +745,7 @@ namespace Donuts
                     return WildSpawnType.bossKnight;
                 case "pmc":
                     //random wildspawntype is either assigned sptusec or sptbear at 50/50 chance
-                    return (UnityEngine.Random.Range(0, 2) == 0) ? (WildSpawnType)AkiBotsPrePatcher.sptUsecValue : (WildSpawnType)AkiBotsPrePatcher.sptBearValue;
+                    return (UnityEngine.Random.Range(0, 2) == 0) ? WildSpawnType.sptUsec : WildSpawnType.sptBear;
                 default:
                     return WildSpawnType.assault;
             }
@@ -754,8 +754,8 @@ namespace Donuts
         internal static EPlayerSide GetSideForWildSpawnType(WildSpawnType spawnType)
         {
             //define spt wildspawn
-            WildSpawnType sptUsec = (WildSpawnType)AkiBotsPrePatcher.sptUsecValue;
-            WildSpawnType sptBear = (WildSpawnType)AkiBotsPrePatcher.sptBearValue;
+            WildSpawnType sptUsec = WildSpawnType.sptUsec;
+            WildSpawnType sptBear = WildSpawnType.sptBear;
 
             if (spawnType == WildSpawnType.pmcBot || spawnType == sptUsec)
             {
