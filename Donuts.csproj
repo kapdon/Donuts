@@ -90,7 +90,7 @@
       <HintPath>$(ManagedAssembliesPath)\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="StayInTarkov">
-      <HintPath>..\SIT-Mod-Ports\References\StayInTarkov.dll</HintPath>
+      <HintPath>$(ManagedAssembliesPath)\StayInTarkov.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

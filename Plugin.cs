@@ -612,7 +612,7 @@ namespace Donuts
             new NewGameDonutsPatch().Enable();
             new BotGroupAddEnemyPatch().Enable();
             new BotMemoryAddEnemyPatch().Enable();
-            //new MatchEndPlayerDisposePatch().Enable();
+            new MatchEndPlayerDisposePatch().Enable();
             new PatchStandbyTeleport().Enable();
             new BotProfilePreparationHook().Enable();
             new AddEnemyPatch().Enable();

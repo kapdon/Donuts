@@ -314,7 +314,7 @@ namespace Donuts
                         continue;
                     }
                     // Ignore bots on the invalid despawn list, and the player
-                    if (bot.IsYourPlayer || !validDespawnListPMC.Contains(bot.Profile.Info.Settings.Role) || bot.AIData.BotOwner.BotState != EBotState.Active)
+                    if (!bot.IsAI || bot.IsYourPlayer || !validDespawnListPMC.Contains(bot.Profile.Info.Settings.Role) || bot.AIData.BotOwner.BotState != EBotState.Active)
                     {
                         continue;
                     }
@@ -354,7 +354,7 @@ namespace Donuts
                         continue;
                     }
                     // Ignore bots on the invalid despawn list, and the player
-                    if (bot.IsYourPlayer || !validDespawnListScav.Contains(bot.Profile.Info.Settings.Role) || bot.AIData.BotOwner.BotState != EBotState.Active)
+                    if (!bot.IsAI || bot.IsYourPlayer || !validDespawnListScav.Contains(bot.Profile.Info.Settings.Role) || bot.AIData.BotOwner.BotState != EBotState.Active)
                     {
                         continue;
                     }
