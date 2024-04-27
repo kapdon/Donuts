@@ -1,5 +1,5 @@
 using System;
-using Aki.PrePatch;
+using StayInTarkov;
 using EFT;
 using static Donuts.DonutComponent;
 
@@ -73,7 +73,8 @@ namespace Donuts
 
         private static bool IsPMC(WildSpawnType role)
         {
-            return role == (WildSpawnType)AkiBotsPrePatcher.sptUsecValue || role == (WildSpawnType)AkiBotsPrePatcher.sptBearValue;
+           // return role == (WildSpawnType)AkiBotsPrePatcher.sptUsecValue || role == (WildSpawnType)AkiBotsPrePatcher.sptBearValue;
+            return role == WildSpawnType.sptUsec || role == WildSpawnType.sptBear;
         }
 
         private static bool IsSCAV(WildSpawnType role)

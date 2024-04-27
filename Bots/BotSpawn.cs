@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Aki.PrePatch;
+using StayInTarkov;
 using Comfort.Common;
 using EFT;
 using HarmonyLib;
 using UnityEngine;
 using static Donuts.DonutComponent;
-using BotCacheClass = GClass591;
-using IProfileData = GClass592;
+using BotCacheClass = Data1;
+using IProfileData = Data8;
 
 #pragma warning disable IDE0007, IDE0044
 
@@ -78,7 +78,7 @@ namespace Donuts
         private static bool IsRaidTimeRemaining(string hotspotSpawnType)
         {
             int hardStopTime = GetHardStopTime(hotspotSpawnType);
-            int raidTimeLeft = (int)Aki.SinglePlayer.Utils.InRaid.RaidTimeUtil.GetRemainingRaidSeconds();
+            int raidTimeLeft = (int)StayInTarkov.AkiSupport.Singleplayer.Utils.InRaid.RaidTimeUtil.GetRemainingRaidSeconds();
             return raidTimeLeft >= hardStopTime;
         }
 
@@ -125,6 +125,12 @@ namespace Donuts
 #if DEBUG
                 DonutComponent.Logger.LogWarning("Found grouped cached bots, spawning them.");
 #endif
+                Vector3? spawnPosition = await SpawnChecks.GetValidSpawnPosition(hotspotTimer.Hotspot, coordinate, DonutsPlugin.maxSpawnTriesPerBot.Value);
+                if (!spawnPosition.HasValue)
+                {
+                    DonutComponent.Logger.LogDebug("No valid spawn position found - skipping this spawn");
+                    return;
+                }
                 await SpawnBotForGroup(BotCacheDataList, wildSpawnType, side, botCreator, botSpawnerClass, (Vector3)spawnPosition, cancellationTokenSource, botDifficulty, count, hotspotTimer);
             }
             else
@@ -140,7 +146,6 @@ namespace Donuts
                     DonutComponent.Logger.LogDebug("No valid spawn position found - skipping this spawn");
                     return;
                 }
-				
                 await SpawnBotForGroup(BotCacheDataList, wildSpawnType, side, botCreator, botSpawnerClass, (Vector3)spawnPosition, cancellationTokenSource, botDifficulty, count, hotspotTimer);
             }
         }
@@ -179,15 +184,15 @@ namespace Donuts
                 wildSpawnType = GetWildSpawnType(hotspotTimer.Hotspot.WildSpawnType);
             }
 
-            if (wildSpawnType == (WildSpawnType)AkiBotsPrePatcher.sptUsecValue || wildSpawnType == (WildSpawnType)AkiBotsPrePatcher.sptBearValue)
+            if (wildSpawnType == WildSpawnType.sptUsec || wildSpawnType == WildSpawnType.sptBear)
             {
                 if (DonutsPlugin.pmcFaction.Value == "USEC")
                 {
-                    wildSpawnType = (WildSpawnType)AkiBotsPrePatcher.sptUsecValue;
+                    wildSpawnType = WildSpawnType.sptUsec;
                 }
                 else if (DonutsPlugin.pmcFaction.Value == "BEAR")
                 {
-                    wildSpawnType = (WildSpawnType)AkiBotsPrePatcher.sptBearValue;
+                    wildSpawnType = WildSpawnType.sptBear;
                 }
             }
             return wildSpawnType;
@@ -479,13 +484,13 @@ namespace Donuts
                 case "sectantwarrior":
                     return WildSpawnType.sectantWarrior;
                 case "usec":
-                    return (WildSpawnType)AkiBotsPrePatcher.sptUsecValue;
+                    return WildSpawnType.sptUsec;
                 case "bear":
-                    return (WildSpawnType)AkiBotsPrePatcher.sptBearValue;
+                    return WildSpawnType.sptBear;
                 case "sptusec":
-                    return (WildSpawnType)AkiBotsPrePatcher.sptUsecValue;
+                    return WildSpawnType.sptUsec;
                 case "sptbear":
-                    return (WildSpawnType)AkiBotsPrePatcher.sptBearValue;
+                    return WildSpawnType.sptBear;
                 case "followerbigpipe":
                     return WildSpawnType.followerBigPipe;
                 case "followerbirdeye":
@@ -494,7 +499,7 @@ namespace Donuts
                     return WildSpawnType.bossKnight;
                 case "pmc":
                     //random wildspawntype is either assigned sptusec or sptbear at 50/50 chance
-                    return (UnityEngine.Random.Range(0, 2) == 0) ? (WildSpawnType)AkiBotsPrePatcher.sptUsecValue : (WildSpawnType)AkiBotsPrePatcher.sptBearValue;
+                    return (UnityEngine.Random.Range(0, 2) == 0) ? WildSpawnType.sptUsec : WildSpawnType.sptBear;
                 default:
                     return WildSpawnType.assault;
             }
@@ -503,8 +508,8 @@ namespace Donuts
         internal static EPlayerSide GetSideForWildSpawnType(WildSpawnType spawnType)
         {
             //define spt wildspawn
-            WildSpawnType sptUsec = (WildSpawnType)AkiBotsPrePatcher.sptUsecValue;
-            WildSpawnType sptBear = (WildSpawnType)AkiBotsPrePatcher.sptBearValue;
+            WildSpawnType sptUsec = WildSpawnType.sptUsec;
+            WildSpawnType sptBear = WildSpawnType.sptBear;
 
             if (spawnType == WildSpawnType.pmcBot || spawnType == sptUsec)
             {
