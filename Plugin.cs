@@ -36,6 +36,7 @@ namespace Donuts
         public static ConfigEntry<int> hardStopTimePMC;
         public static ConfigEntry<int> hardStopTimeSCAV;
         public static ConfigEntry<string> forceAllBotType;
+        public static ConfigEntry<float> despawnInterval;
 
         // Global Min Distance From Player
         public static ConfigEntry<bool> globalMinSpawnDistanceFromPlayerBool;
@@ -373,7 +374,7 @@ namespace Donuts
             globalMinSpawnDistanceFromPlayerCustoms = Config.Bind(
                 "3. Global Minimum Spawn Distance From Player",
                 "Customs",
-                85f,
+                60f,
                 new ConfigDescription("Distance (in meters) that bots should spawn away from the player (you).",
                 null,
                 new ConfigurationManagerAttributes { IsAdvanced = false, Order = 1 }));
@@ -397,7 +398,7 @@ namespace Donuts
             globalMinSpawnDistanceFromPlayerWoods = Config.Bind(
                 "3. Global Minimum Spawn Distance From Player",
                 "Woods",
-                150f,
+                125f,
                 new ConfigDescription("Distance (in meters) that bots should spawn away from the player (you).",
                 null,
                 new ConfigurationManagerAttributes { IsAdvanced = false, Order = 1 }));
@@ -453,7 +454,7 @@ namespace Donuts
             globalMinSpawnDistanceFromOtherBotsFactory = Config.Bind(
                 "4. Global Minimum Spawn Distance From Other Bots",
                 "Factory",
-                35f,
+                20f,
                 new ConfigDescription("Distance (in meters) that bots should spawn away from other alive bots.",
                 null,
                 new ConfigurationManagerAttributes { IsAdvanced = false, Order = 1 }));
@@ -461,7 +462,7 @@ namespace Donuts
             globalMinSpawnDistanceFromOtherBotsCustoms = Config.Bind(
                 "4. Global Minimum Spawn Distance From Other Bots",
                 "Customs",
-                85f,
+                50f,
                 new ConfigDescription("Distance (in meters) that bots should spawn away from other alive bots.",
                 null,
                 new ConfigurationManagerAttributes { IsAdvanced = false, Order = 1 }));
@@ -469,7 +470,7 @@ namespace Donuts
             globalMinSpawnDistanceFromOtherBotsReserve = Config.Bind(
                 "4. Global Minimum Spawn Distance From Other Bots",
                 "Reserve",
-                85f,
+                50f,
                 new ConfigDescription("Distance (in meters) that bots should spawn away from other alive bots.",
                 null,
                 new ConfigurationManagerAttributes { IsAdvanced = false, Order = 1 }));
@@ -477,7 +478,7 @@ namespace Donuts
             globalMinSpawnDistanceFromOtherBotsStreets = Config.Bind(
                 "4. Global Minimum Spawn Distance From Other Bots",
                 "Streets",
-                85f,
+                80f,
                 new ConfigDescription("Distance (in meters) that bots should spawn away from other alive bots.",
                 null,
                 new ConfigurationManagerAttributes { IsAdvanced = false, Order = 1 }));
@@ -485,7 +486,7 @@ namespace Donuts
             globalMinSpawnDistanceFromOtherBotsWoods = Config.Bind(
                 "4. Global Minimum Spawn Distance From Other Bots",
                 "Woods",
-                125f,
+                100f,
                 new ConfigDescription("Distance (in meters) that bots should spawn away from other alive bots.",
                 null,
                 new ConfigurationManagerAttributes { IsAdvanced = false, Order = 1 }));
@@ -501,7 +502,7 @@ namespace Donuts
             globalMinSpawnDistanceFromOtherBotsShoreline = Config.Bind(
                 "4. Global Minimum Spawn Distance From Other Bots",
                 "Shoreline",
-                100f,
+                80f,
                 new ConfigDescription("Distance (in meters) that bots should spawn away from other alive bots.",
                 null,
                 new ConfigurationManagerAttributes { IsAdvanced = false, Order = 1 }));
@@ -509,7 +510,7 @@ namespace Donuts
             globalMinSpawnDistanceFromOtherBotsGroundZero = Config.Bind(
                 "4. Global Minimum Spawn Distance From Other Bots",
                 "Ground Zero",
-                75f,
+                65f,
                 new ConfigDescription("Distance (in meters) that bots should spawn away from other alive bots.",
                 null,
                 new ConfigurationManagerAttributes { IsAdvanced = false, Order = 1 }));
@@ -517,7 +518,7 @@ namespace Donuts
             globalMinSpawnDistanceFromOtherBotsInterchange = Config.Bind(
                 "4. Global Minimum Spawn Distance From Other Bots",
                 "Interchange",
-                100f,
+                80f,
                 new ConfigDescription("Distance (in meters) that bots should spawn away from other alive bots.",
                 null,
                 new ConfigurationManagerAttributes { IsAdvanced = false, Order = 1 }));
@@ -525,7 +526,7 @@ namespace Donuts
             globalMinSpawnDistanceFromOtherBotsLighthouse = Config.Bind(
                 "4. Global Minimum Spawn Distance From Other Bots",
                 "Lighthouse",
-                100f,
+                60f,
                 new ConfigDescription("Distance (in meters) that bots should spawn away from other alive bots.",
                 null,
                 new ConfigurationManagerAttributes { IsAdvanced = false, Order = 1 }));
@@ -536,6 +537,14 @@ namespace Donuts
                 "Max Spawn Tries Per Bot",
                 20,
                 new ConfigDescription("It will stop trying to spawn one of the bots after this many attempts to find a good spawn point",
+                null,
+                new ConfigurationManagerAttributes { IsAdvanced = true, Order = 5 }));
+
+            despawnInterval = Config.Bind(
+                "5. Advanced Spawn Settings",
+                "Despawn Bot Interval",
+                10f,
+                new ConfigDescription("This value is the number in seconds that Donuts should despawn bots. Default is 10 seconds. Note: decreasing this value may affect your performance.",
                 null,
                 new ConfigurationManagerAttributes { IsAdvanced = true, Order = 4 }));
 

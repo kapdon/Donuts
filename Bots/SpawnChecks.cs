@@ -41,8 +41,8 @@ namespace Donuts
 
         private static Vector3 GenerateRandomSpawnPosition(Entry hotspot, Vector3 coordinate)
         {
-            float randomX = UnityEngine.Random.Range(-hotspot.MaxDistance, hotspot.MaxDistance);
-            float randomZ = UnityEngine.Random.Range(-hotspot.MaxDistance, hotspot.MaxDistance);
+            float randomX = Random.Range(-hotspot.MaxDistance, hotspot.MaxDistance);
+            float randomZ = Random.Range(-hotspot.MaxDistance, hotspot.MaxDistance);
 
             return new Vector3(coordinate.x + randomX, coordinate.y, coordinate.z + randomZ);
         }
@@ -51,34 +51,52 @@ namespace Donuts
         {
             if (spawnPosition != null && hotspot != null)
             {
-                return !IsSpawnPositionInsideWall(spawnPosition) &&
-                       !IsSpawnPositionInPlayerLineOfSight(spawnPosition) &&
-                       !IsSpawnInAir(spawnPosition) &&
-                       !IsMinSpawnDistanceFromPlayerTooShort(spawnPosition, hotspot) &&
-                       !IsPositionTooCloseToOtherBots(spawnPosition, hotspot);
+                bool validPosition = !IsSpawnPositionInsideWall(spawnPosition) &&
+                                    !IsSpawnPositionInPlayerLineOfSight(spawnPosition) &&
+                                    !IsSpawnInAir(spawnPosition) &&
+                                    !IsMinSpawnDistanceFromPlayerTooShort(spawnPosition, hotspot);
+
+                // Only check proximity to other bots if the corresponding setting is enabled
+                if (DonutsPlugin.globalMinSpawnDistanceFromOtherBotsBool.Value)
+                {
+                    validPosition &= !IsPositionTooCloseToOtherBots(spawnPosition, hotspot);
+                }
+                return validPosition;
             }
             return false;
         }
+
         internal static bool IsSpawnPositionInPlayerLineOfSight(Vector3 spawnPosition)
         {
             //add try catch for when player is null at end of raid
             try
             {
-                Vector3 playerPosition = gameWorld.MainPlayer.MainParts[BodyPartType.head].Position;
-                Vector3 direction = (playerPosition - spawnPosition).normalized;
-                float distance = Vector3.Distance(spawnPosition, playerPosition);
-
-                RaycastHit hit;
-                if (!Physics.Raycast(spawnPosition, direction, out hit, distance, LayerMaskClass.HighPolyWithTerrainMask))
+                foreach (var player in playerList)
                 {
-                    // No objects found between spawn point and player
-                    return true;
+                    if (player == null || player.HealthController == null)
+                    {
+                        continue;
+                    }
+                    if (!player.HealthController.IsAlive)
+                    {
+                        continue;
+                    }
+                    Vector3 playerPosition = player.MainParts[BodyPartType.head].Position;
+                    Vector3 direction = (playerPosition - spawnPosition).normalized;
+                    float distance = Vector3.Distance(spawnPosition, playerPosition);
+                    RaycastHit hit;
+                    if (!Physics.Raycast(spawnPosition, direction, out hit, distance, LayerMaskClass.HighPolyWithTerrainMask))
+                    {
+                        // No objects found between spawn point and player
+                        return true;
+                    }
                 }
             }
             catch { }
 
             return false;
         }
+
         internal static bool IsSpawnPositionInsideWall(Vector3 position)
         {
             // Check if any game object parent has the name "WALLS" in it
@@ -156,34 +174,45 @@ namespace Donuts
 
         private static float GetMinDistanceFromOtherBots(Entry hotspot)
         {
-            if (DonutsPlugin.globalMinSpawnDistanceFromOtherBotsBool.Value)
+            switch (hotspot.MapName.ToLower())
             {
-                switch (hotspot.MapName.ToLower())
-                {
-                    case "bigmap": return DonutsPlugin.globalMinSpawnDistanceFromOtherBotsCustoms.Value;
-                    case "factory4_day": return DonutsPlugin.globalMinSpawnDistanceFromOtherBotsFactory.Value;
-                    case "factory4_night": return DonutsPlugin.globalMinSpawnDistanceFromOtherBotsFactory.Value;
-                    case "tarkovstreets": return DonutsPlugin.globalMinSpawnDistanceFromOtherBotsStreets.Value;
-                    case "sandbox": return DonutsPlugin.globalMinSpawnDistanceFromOtherBotsGroundZero.Value;
-                    case "rezervbase": return DonutsPlugin.globalMinSpawnDistanceFromOtherBotsReserve.Value;
-                    case "lighthouse": return DonutsPlugin.globalMinSpawnDistanceFromOtherBotsLighthouse.Value;
-                    case "shoreline": return DonutsPlugin.globalMinSpawnDistanceFromOtherBotsShoreline.Value;
-                    case "woods": return DonutsPlugin.globalMinSpawnDistanceFromOtherBotsWoods.Value;
-                    case "laboratory": return DonutsPlugin.globalMinSpawnDistanceFromOtherBotsLaboratory.Value;
-                    case "interchange": return DonutsPlugin.globalMinSpawnDistanceFromOtherBotsInterchange.Value;
-                    default: return hotspot.MinSpawnDistanceFromPlayer;
-                }
-            }
-            else
-            {
-                return hotspot.MinSpawnDistanceFromPlayer;
+                case "bigmap": return DonutsPlugin.globalMinSpawnDistanceFromOtherBotsCustoms.Value;
+                case "factory4_day": return DonutsPlugin.globalMinSpawnDistanceFromOtherBotsFactory.Value;
+                case "factory4_night": return DonutsPlugin.globalMinSpawnDistanceFromOtherBotsFactory.Value;
+                case "tarkovstreets": return DonutsPlugin.globalMinSpawnDistanceFromOtherBotsStreets.Value;
+                case "sandbox": return DonutsPlugin.globalMinSpawnDistanceFromOtherBotsGroundZero.Value;
+                case "rezervbase": return DonutsPlugin.globalMinSpawnDistanceFromOtherBotsReserve.Value;
+                case "lighthouse": return DonutsPlugin.globalMinSpawnDistanceFromOtherBotsLighthouse.Value;
+                case "shoreline": return DonutsPlugin.globalMinSpawnDistanceFromOtherBotsShoreline.Value;
+                case "woods": return DonutsPlugin.globalMinSpawnDistanceFromOtherBotsWoods.Value;
+                case "laboratory": return DonutsPlugin.globalMinSpawnDistanceFromOtherBotsLaboratory.Value;
+                case "interchange": return DonutsPlugin.globalMinSpawnDistanceFromOtherBotsInterchange.Value;
+                default: return 0f;
             }
         }
 
         internal static bool IsMinSpawnDistanceFromPlayerTooShort(Vector3 position, Entry hotspot)
         {
             float minDistanceFromPlayer = GetMinDistanceFromPlayer(hotspot);
-            return (gameWorld.MainPlayer.Position - position).sqrMagnitude < minDistanceFromPlayer * minDistanceFromPlayer;
+
+            foreach (var player in playerList)
+            {
+                if (player == null || player.HealthController == null)
+                {
+                    continue;
+                }
+
+                if (!player.HealthController.IsAlive)
+                {
+                    continue;
+                }
+
+                if ((player.Position - position).sqrMagnitude < (minDistanceFromPlayer * minDistanceFromPlayer))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         internal static bool IsPositionTooCloseToOtherBots(Vector3 position, Entry hotspot)
@@ -194,11 +223,13 @@ namespace Donuts
             foreach (var player in players)
             {
                 if (player == null || !player.HealthController.IsAlive || player.IsYourPlayer)
-                    continue; 
+
+                    continue;
 
                 if ((player.Position - position).sqrMagnitude < minDistanceFromOtherBots * minDistanceFromOtherBots)
                 {
-                    return true; 
+                    return true;
+					
                 }
             }
             return false;

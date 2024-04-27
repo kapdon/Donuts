@@ -34,18 +34,11 @@ namespace Donuts
             string hotspotSpawnType = hotspotTimer.Hotspot.WildSpawnType;
             WildSpawnType wildSpawnType = DetermineWildSpawnType(hotspotTimer, hotspotSpawnType);
 
-            // Check for a valid spawn position
-            Vector3? spawnPosition = await SpawnChecks.GetValidSpawnPosition(hotspotTimer.Hotspot, coordinate, DonutsPlugin.maxSpawnTriesPerBot.Value);
-            if (!spawnPosition.HasValue)
-            {
-                DonutComponent.Logger.LogDebug("No valid spawn position found - skipping this spawn");
-                return;
-            }
-
             // Check Spawn Hard Stop
             if ((PmcSpawnTypes.Contains(hotspotSpawnType) && DonutsPlugin.hardStopOptionPMC.Value) ||
                 (hotspotSpawnType == ScavSpawnType && DonutsPlugin.hardStopOptionSCAV.Value))
             {
+
                 if (!IsRaidTimeRemaining(hotspotSpawnType))
                 {
                     DonutComponent.Logger.LogDebug("Spawn not allowed due to raid time conditions - skipping this spawn");
@@ -77,7 +70,9 @@ namespace Donuts
             }
 
             bool isGroup = maxCount > 1;
-            await SetupSpawn(hotspotTimer, spawnPosition.Value, maxCount, isGroup, wildSpawnType);
+
+            await SetupSpawn(hotspotTimer, maxCount, isGroup, wildSpawnType, coordinate);
+
         }
 
         private static bool IsRaidTimeRemaining(string hotspotSpawnType)
@@ -103,22 +98,22 @@ namespace Donuts
             return getActualBotCount(groupChance, defaultMaxCount);
         }
 
-        private static async Task SetupSpawn(HotspotTimer hotspotTimer, Vector3 spawnPosition, int maxCount, bool isGroup, WildSpawnType wildSpawnType)
+        private static async Task SetupSpawn(HotspotTimer hotspotTimer, int maxCount, bool isGroup, WildSpawnType wildSpawnType, Vector3 coordinate)
         {
-            DonutComponent.Logger.LogDebug($"Spawning {(isGroup ? "group" : "solo")} at {spawnPosition} with bot count {maxCount}");
+            DonutComponent.Logger.LogDebug($"Attempting to spawn {(isGroup ? "group" : "solo")} with bot count {maxCount}");
             if (isGroup)
             {
-                await SpawnGroupBots(hotspotTimer, spawnPosition, maxCount, wildSpawnType);
+                await SpawnGroupBots(hotspotTimer, maxCount, wildSpawnType, coordinate);
             }
             else
             {
-                await SpawnSingleBot(hotspotTimer, spawnPosition, wildSpawnType);
+                await SpawnSingleBot(hotspotTimer, wildSpawnType, coordinate);
             }
         }
 
-        private static async Task SpawnGroupBots(HotspotTimer hotspotTimer, Vector3 spawnPosition, int count, WildSpawnType wildSpawnType)
+        private static async Task SpawnGroupBots(HotspotTimer hotspotTimer, int count, WildSpawnType wildSpawnType, Vector3 coordinate)
         {
-            DonutComponent.Logger.LogDebug($"Spawning a group of {count} bots at {spawnPosition}.");
+            DonutComponent.Logger.LogDebug($"Spawning a group of {count} bots.");
             EPlayerSide side = GetSideForWildSpawnType(wildSpawnType);
             var cancellationTokenSource = AccessTools.Field(typeof(BotSpawner), "_cancellationTokenSource").GetValue(botSpawnerClass) as CancellationTokenSource;
             BotDifficulty botDifficulty = GetBotDifficulty(wildSpawnType);
@@ -138,17 +133,32 @@ namespace Donuts
                 DonutComponent.Logger.LogWarning($"No grouped cached bots found, generating on the fly for: {hotspotTimer.Hotspot.Name} for {count} grouped number of bots.");
 #endif
                 await DonutsBotPrep.CreateGroupBots(side, wildSpawnType, botDifficulty, groupParams, count, 1);
+
+                Vector3? spawnPosition = await SpawnChecks.GetValidSpawnPosition(hotspotTimer.Hotspot, coordinate, DonutsPlugin.maxSpawnTriesPerBot.Value);
+                if (!spawnPosition.HasValue)
+                {
+                    DonutComponent.Logger.LogDebug("No valid spawn position found - skipping this spawn");
+                    return;
+                }
+				
                 await SpawnBotForGroup(BotCacheDataList, wildSpawnType, side, botCreator, botSpawnerClass, (Vector3)spawnPosition, cancellationTokenSource, botDifficulty, count, hotspotTimer);
             }
         }
 
-        private static async Task SpawnSingleBot(HotspotTimer hotspotTimer, Vector3 spawnPosition, WildSpawnType wildSpawnType)
+        private static async Task SpawnSingleBot(HotspotTimer hotspotTimer, WildSpawnType wildSpawnType, Vector3 coordinate)
         {
-            DonutComponent.Logger.LogDebug($"Spawning a single bot at {spawnPosition}.");
+            DonutComponent.Logger.LogDebug($"Spawning a single bot.");
             EPlayerSide side = GetSideForWildSpawnType(wildSpawnType);
             var cancellationTokenSource = AccessTools.Field(typeof(BotSpawner), "_cancellationTokenSource").GetValue(botSpawnerClass) as CancellationTokenSource;
             BotDifficulty botDifficulty = GetBotDifficulty(wildSpawnType);
             var BotCacheDataList = DonutsBotPrep.GetWildSpawnData(wildSpawnType, botDifficulty);
+
+            Vector3? spawnPosition = await SpawnChecks.GetValidSpawnPosition(hotspotTimer.Hotspot, coordinate, DonutsPlugin.maxSpawnTriesPerBot.Value);
+            if (!spawnPosition.HasValue)
+            {
+                DonutComponent.Logger.LogDebug("No valid spawn position found - skipping this spawn");
+                return;
+            }
 
             await SpawnBotFromCacheOrCreateNew(BotCacheDataList, wildSpawnType, side, botCreator, botSpawnerClass, (Vector3)spawnPosition, cancellationTokenSource, botDifficulty, hotspotTimer);
         }
@@ -379,9 +389,25 @@ namespace Donuts
         {
             try
             {
-                float distanceSquared = (gameWorld.MainPlayer.Position - position).sqrMagnitude;
-                float activationDistanceSquared = hotspot.BotTriggerDistance * hotspot.BotTriggerDistance;
-                return distanceSquared <= activationDistanceSquared;
+                foreach (var player in playerList)
+                {
+                    if (player == null || player.HealthController == null)
+                    {
+                        continue;
+                    }
+                    if (!player.HealthController.IsAlive)
+                    {
+                        continue;
+                    }
+                    float distanceSquared = (player.Position - position).sqrMagnitude;
+
+                    float activationDistanceSquared = hotspot.BotTriggerDistance * hotspot.BotTriggerDistance;
+                    if (distanceSquared <= activationDistanceSquared)
+                    {
+                        //TODO - this may be true when it shouldn't, e.g. player 1 is in correct range, player 2 is standing next to spawn point
+                        return true;
+                    }
+                }
             }
             catch { }
 
